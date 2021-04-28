@@ -2377,12 +2377,26 @@ STATIC mp_obj_t bt_conn_services (mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bt_conn_services_obj, bt_conn_services);
 
+STATIC mp_obj_t bt_conn_cache_refresh (mp_obj_t self_in) {
+    bt_connection_obj_t *self = self_in;
+    if (self->conn_id >= 0) {
+        if (ESP_OK != esp_ble_gattc_cache_refresh(self->srv_bda)) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        }
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "connection already closed"));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bt_conn_cache_refresh_obj, bt_conn_cache_refresh);
+
 STATIC const mp_map_elem_t bt_connection_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected),             (mp_obj_t)&bt_conn_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),              (mp_obj_t)&bt_conn_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_services),                (mp_obj_t)&bt_conn_services_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_mtu),                 (mp_obj_t)&bt_conn_get_mtu_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cache_refresh),           (mp_obj_t)&bt_conn_cache_refresh_obj },
 
 };
 STATIC MP_DEFINE_CONST_DICT(bt_connection_locals_dict, bt_connection_locals_dict_table);
